@@ -1,0 +1,134 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #6366f1;
+  --color-primary-light: #e0e7ff;
+  --color-accent: #a855f7;
+  --font-outfit: "Outfit", sans-serif;
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: rgba(255, 255, 255, 0.8);
+}
+
+body {
+  color: var(--foreground);
+  background:
+    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.05) 0px, transparent 50%),
+    #f8fafc;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+.font-outfit {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Premium UI Components */
+.premium-card {
+  background: white;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+  border-radius: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-premium {
+  @apply relative overflow-hidden transition-all duration-300 active:scale-95;
+}
+
+/* Section Title Styling */
+.section-label {
+  @apply text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4 flex items-center gap-2;
+}
+
+.section-label::after {
+  content: '';
+  @apply h-px bg-slate-100 flex-1;
+}
+
+/* Message Bubble Enhancements */
+.ai-bubble {
+  @apply border border-slate-100 shadow-sm leading-relaxed;
+  background: linear-gradient(to bottom right, #ffffff, #fcfdff);
+}
+
+.user-bubble {
+  @apply shadow-md shadow-primary/10;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+/* Animations */
+.slide-up {
+  opacity: 0;
+  animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Typography Overrides */
+.prose {
+  @apply max-w-none text-slate-700;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  @apply font-outfit text-slate-900 mb-4 mt-6;
+}
+
+.prose strong {
+  @apply text-slate-900 font-bold;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-indigo-200 bg-indigo-50/30 py-1 px-4 italic rounded-r-lg;
+}
+
+/* Mermaid Diagram Container */
+.mermaid-container {
+  @apply flex justify-center w-full overflow-x-auto py-4;
+}
+
+.mermaid-container svg {
+  @apply max-w-full h-auto rounded-xl;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+}
