@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { grade, subject, curriculum, mode, question } = body;
 
-    Validate required fields
+    //Validate required fields
     if (!grade || !subject || !curriculum || !mode || !question) {
       return NextResponse.json(
         { error: 'Missing required fields: grade, subject, curriculum, mode, question' },
