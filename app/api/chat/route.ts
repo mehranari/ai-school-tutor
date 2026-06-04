@@ -32,21 +32,20 @@ export async function POST(request: NextRequest) {
       studentQuestion: question,
     });
 
-    // Append child-friendly and Mermaid anti-crash instructions to the prompt
-    const prompt = `${basePrompt}
+    const prompt = `${basePrompt}\n\nIMPORTANT: Respond only in clear standard text paragraphs or standard lists. Do not use mermaid syntax.`;
 
-CRITICAL INSTRUCTIONS FOR RESPONSIBLE TUTORING:
-1. Tone & Style: Act as a friendly, encouraging, and patient AI School Tutor. Tailor your language simplicity and explanation length so it is engaging and perfectly understandable for a child or young student.
-2. Anti-Crash Formatting Rule: Do NOT ever use "\`\`\`mermaid" markdown syntax or generate flowcharts/diagram structural blocks under any circumstance. Doing so crashes the app interface. Instead, explain all structural concepts, steps, and systems using clear paragraphs, kid-friendly analogies, bullet points, or standard numbered lists.`;
-
-    // Use Groq API instead of Hugging Face
+    // Use Groq API
     let generatedText = await queryGroq(prompt);
-
-    // No longer need extensive cleaning part here as queryGroq handles basic formatting
 
     // Clean up the response - remove the prompt if it was included
     if (generatedText.includes(prompt)) {
       generatedText = generatedText.replace(prompt, '').trim();
+    }
+
+    // SYSTEM SAFEGUARD: Forcefully strip out any mermaid code block markers if the AI ignored instructions
+    if (generatedText.includes('```mermaid')) {
+      // Replaces the markdown tag to render it as standard text so the frontend won't crash
+      generatedText = generatedText.replaceAll('```mermaid', '```text\n[Diagram Note: Structural View]\n');
     }
 
     return NextResponse.json({
