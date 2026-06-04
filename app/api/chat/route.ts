@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
       studentQuestion: question,
     });
 
-    const prompt = `${basePrompt}\n\nIMPORTANT: Respond only in clear standard text paragraphs or standard lists. Do not use mermaid syntax.`;
+    // CRITICAL REINFORCEMENT: Explicitly ban code block structures that break frontends
+    const prompt = `${basePrompt}\n\nIMPORTANT FORMATTING RULES:\n1. Respond using only simple standard text paragraphs, bold text, or clean bullet points.\n2. Do not use markdown code block tags (\`\`\`).\n3. Absolutely never output any graphs, diagrams, schemas, or text resembling flowchart directions.`;
 
     // Use Groq API
     let generatedText = await queryGroq(prompt);
@@ -42,10 +43,16 @@ export async function POST(request: NextRequest) {
       generatedText = generatedText.replace(prompt, '').trim();
     }
 
-    // SYSTEM SAFEGUARD: Forcefully strip out any mermaid code block markers if the AI ignored instructions
-    if (generatedText.includes('```mermaid')) {
-      // Replaces the markdown tag to render it as standard text so the frontend won't crash
-      generatedText = generatedText.replaceAll('```mermaid', '```text\n[Diagram Note: Structural View]\n');
+    // BRUTE FORCE SYSTEM SAFEGUARDS: Safely clean out any structural code segments
+    if (generatedText.includes('```')) {
+      // Remove all code block markers completely to protect the Markdown parser from failing
+      generatedText = generatedText.replace(/```[a-z]*/g, '');
+    }
+
+    // Catch any leftover keywords that could trigger a diagram execution sequence
+    if (generatedText.toLowerCase().includes('graph td') || generatedText.toLowerCase().includes('sequencediagram')) {
+      generatedText = "Here is the clear explanation for your study topic:\n\n" +
+        generatedText.replace(/graph\s+\w+/gi, '').replace(/subgraph/gi, '');
     }
 
     return NextResponse.json({

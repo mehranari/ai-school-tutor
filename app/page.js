@@ -11,17 +11,6 @@ export default function Home() {
     const [selectedGrade, setSelectedGrade] = useState(10);
     const [selectedSubject, setSelectedSubject] = useState("Maths");
 
-    // CRITICAL FIX: Global frontend override to prevent Mermaid from crashing the window view
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            // Forces mermaid to silently ignore configuration parse errors instead of showing the bomb icon
-            (window as any).mermaidConfig = {
-                startOnLoad: false,
-                suppressErrors: true,
-                errorLabels: false
-            };
-        }
-    }, []);
 
     const getSubjectFocus = () => {
         switch (selectedSubject) {

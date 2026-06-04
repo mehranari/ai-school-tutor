@@ -6,7 +6,6 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { GraduationCap, User, Sparkles, Info, Lightbulb, Image as ImageIcon } from "lucide-react";
-import Mermaid from "./Mermaid";
 
 export default function MessageBubble({ message, isAi, accent = "indigo" }) {
     return (
@@ -40,10 +39,6 @@ export default function MessageBubble({ message, isAi, accent = "indigo" }) {
                                         </div>
                                     ),
                                     code: ({ node, inline, className, children, ...props }) => {
-                                        const match = /language-(\w+)/.exec(className || "");
-                                        if (!inline && match && match[1] === "mermaid") {
-                                            return <Mermaid chart={String(children).replace(/\n$/, "")} />;
-                                        }
                                         return inline
                                             ? <code className={`bg-${accent}-50 text-${accent}-600 px-2 py-0.5 rounded-lg text-xs font-bold font-mono`} {...props}>{children}</code>
                                             : <div className="bg-slate-900 text-slate-200 p-8 rounded-2xl my-8 overflow-x-auto shadow-2xl font-mono text-sm leading-relaxed border border-slate-800"><code {...props}>{children}</code></div>
