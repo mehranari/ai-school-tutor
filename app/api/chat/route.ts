@@ -23,14 +23,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate the prompt using our template
-    const prompt = generatePrompt({
+    // Generate the base prompt using our template
+    const basePrompt = generatePrompt({
       grade: grade as Grade,
       subject: subject as Subject,
       curriculum: curriculum as Curriculum,
       mode: mode as Mode,
       studentQuestion: question,
     });
+
+    // Append child-friendly and Mermaid anti-crash instructions to the prompt
+    const prompt = `${basePrompt}
+
+CRITICAL INSTRUCTIONS FOR RESPONSIBLE TUTORING:
+1. Tone & Style: Act as a friendly, encouraging, and patient AI School Tutor. Tailor your language simplicity and explanation length so it is engaging and perfectly understandable for a child or young student.
+2. Anti-Crash Formatting Rule: Do NOT ever use "\`\`\`mermaid" markdown syntax or generate flowcharts/diagram structural blocks under any circumstance. Doing so crashes the app interface. Instead, explain all structural concepts, steps, and systems using clear paragraphs, kid-friendly analogies, bullet points, or standard numbered lists.`;
 
     // Use Groq API instead of Hugging Face
     let generatedText = await queryGroq(prompt);
