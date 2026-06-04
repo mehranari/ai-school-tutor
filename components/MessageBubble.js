@@ -10,15 +10,16 @@ import MermaidChart from "./MermaidChart";
 
 export default function MessageBubble({ message, isAi, accent = "indigo" }) {
     return (
-        <div className={`flex ${isAi ? "justify-start" : "justify-end"} mb-4 md:mb-8 w-full overflow-hidden slide-up`}>
+        <div className={`flex ${isAi ? "justify-start" : "justify-end"} mb-4 md:mb-8 w-full overflow-hidden`}>
             <div className={`flex items-start gap-2 md:gap-4 w-full max-w-[98%] sm:max-w-[92%] md:max-w-[85%] ${isAi ? "flex-row" : "flex-row-reverse"}`}>
-                {/* Visual Identity */}
-                <div className={`shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md transition-transform hover:scale-110 ${isAi ? "bg-slate-900 text-white" : `bg-${accent}-600 text-white`
+
+                {/* Visual Identity Profile Icon */}
+                <div className={`shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-md ${isAi ? "bg-slate-900 text-white" : `bg-${accent}-600 text-white`
                     }`}>
                     {isAi ? <GraduationCap size={18} className="sm:w-5 sm:h-5" /> : <User size={18} className="sm:w-5 sm:h-5" />}
                 </div>
 
-                {/* Content Container */}
+                {/* Content Message Layout Box */}
                 <div className="flex flex-col gap-1 sm:gap-2 flex-1 min-w-0 overflow-hidden">
                     <div
                         className={`rounded-2xl sm:rounded-3xl px-4 py-4 sm:px-8 sm:py-7 relative border border-slate-100 shadow-sm overflow-hidden break-words ${isAi
@@ -43,17 +44,17 @@ export default function MessageBubble({ message, isAi, accent = "indigo" }) {
                                     ),
                                     code: ({ node, inline, className, children, ...props }) => {
                                         const codeString = String(children).trim();
+
+                                        // Intercept any block structures detailing mermaid diagrams
                                         const isMermaid = /language-mermaid/.test(className || "") ||
                                             codeString.startsWith("graph ") ||
-                                            codeString.startsWith("graph") ||
+                                            codeString.startsWith("graph\n") ||
+                                            codeString.startsWith("graph LR") ||
+                                            codeString.startsWith("graph TD") ||
                                             codeString.startsWith("sequenceDiagram");
 
                                         if (!inline && isMermaid) {
-                                            return (
-                                                <div className="w-full my-4 overflow-x-auto bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-inner max-w-full clear-both">
-                                                    <MermaidChart chartCode={codeString} />
-                                                </div>
-                                            );
+                                            return <MermaidChart chartCode={codeString} />;
                                         }
 
                                         return inline ? (
