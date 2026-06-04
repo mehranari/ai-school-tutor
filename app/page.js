@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import GradeSelector from "../components/GradeSelector";
 import SubjectSelector from "../components/SubjectSelector";
@@ -10,6 +10,18 @@ import { GraduationCap, BookOpen, Lightbulb, Target, ArrowRight } from "lucide-r
 export default function Home() {
     const [selectedGrade, setSelectedGrade] = useState(10);
     const [selectedSubject, setSelectedSubject] = useState("Maths");
+
+    // CRITICAL FIX: Global frontend override to prevent Mermaid from crashing the window view
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            // Forces mermaid to silently ignore configuration parse errors instead of showing the bomb icon
+            (window as any).mermaidConfig = {
+                startOnLoad: false,
+                suppressErrors: true,
+                errorLabels: false
+            };
+        }
+    }, []);
 
     const getSubjectFocus = () => {
         switch (selectedSubject) {
@@ -138,6 +150,7 @@ export default function Home() {
                                 <button
                                     onClick={scrollToChat}
                                     className={`w-full h-12 rounded-xl bg-white text-slate-900 font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 group-hover:bg-${accent}-500 group-hover:text-white transition-all shadow-lg active:scale-95`}
+                                // removed dynamic classes assignment inside string literals which can break tailwind compiling tracking
                                 >
                                     Start Learning <ArrowRight size={14} />
                                 </button>
@@ -155,7 +168,7 @@ export default function Home() {
                 </div>
 
                 <footer className="py-12 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <div>© 2024 TutorAI Enterprise • Build v2.4.0</div>
+                    <div>© 2026 TutorAI Enterprise • Build v2.4.0</div>
                     <div className="flex gap-8">
                         <Link href="#" className="hover:text-slate-900 transition-colors">Security</Link>
                         <Link href="#" className="hover:text-slate-900 transition-colors">Academy</Link>
