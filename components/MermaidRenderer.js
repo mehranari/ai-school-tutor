@@ -1,15 +1,28 @@
 "use client";
-import React from "react";
-import Mermaid from "react-mermaid2";
+import React, { useEffect, useRef } from "react";
+import mermaid from "mermaid";
 
 export default function MermaidRenderer({ chartCode }) {
-    // Ensure the code is clean and doesn't contain extra markdown fences
-    const cleanCode = chartCode.replace(/```mermaid/gi, "").replace(/
-        ```/g, "").trim();
+    const containerRef = useRef(null);
 
-  return (
-    <div className="my-6 p-4 bg-white border border-slate-200 rounded-xl overflow-x-auto">
-      <Mermaid chart="{cleanCode}"/>
-    </div>
-  );
+    useEffect(() => {
+        // We add a 500ms delay to let extensions like Grammarly 
+        // finish their "spamming" in the console first.
+        const timer = setTimeout(async () => {
+            const clean = chartCode.replace(/```mermaid/gi, "").replace(/```/g, "").trim();
+            if (containerRef.current && clean) {
+                try {
+                    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+                    const { svg } = await mermaid.render(`diag-${Date.now()}`, clean);
+                    containerRef.current.innerHTML = svg;
+                } catch (err) {
+                    console.error("Mermaid Render Error:", err);
+                }
+            }
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [chartCode]);
+
+    return <div ref={containerRef} className="mermaid-container" />;
 }
