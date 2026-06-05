@@ -1,24 +1,29 @@
-// ... (keep your imports)
-export default function MessageBubble({ message, isAi, accent = "indigo" }) {
+"use client";
+import React, { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import MermaidRenderer from "./MermaidRenderer";
 
-    // Splitting logic: Find the mermaid block and extract the content
-    const parts = message.split(/(```mermaid[\s\S]*?```)/gi);
+export default function MessageBubble({ message, isAi, onClearChat, historyLessons = [] }) {
+    // This regex looks for the block and ignores everything else
+    const renderContent = (text) => {
+        const parts = text.split(/(```mermaid[\s\S]*?
+            ```)/);
+        return parts.map((part, i) => {
+            if (part.startsWith("```mermaid")) {
+                const code = part.replace(/
+                ```mermaid/g, "").replace(/``` / g, "").trim();
+        return <MermaidRenderer key={i} chartCode={code} />;
+    }
+    return <ReactMarkdown key={i} className="prose">{part}</ReactMarkdown>;
+});
+    };
 
-    return (
-        <div className={`w-full flex items-start gap-4 ${isAi ? "" : "flex-row-reverse"}`}>
-            {/* ... (Your avatar code) */}
-            <div className="flex-1">
-                {parts.map((part, index) => {
-                    if (part.toLowerCase().startsWith("```mermaid")) {
-                        return <MermaidChart key={index} chartCode={part} />;
-                    }
-                    return (
-                        <ReactMarkdown key={index} remarkPlugins={[remarkGfm, remarkMath]}>
-                            {part}
-                        </ReactMarkdown>
-                    );
-                })}
-            </div>
+return (
+    <div className="w-full">
+        {/* ... keep your history/button UI here ... */}
+        <div className="message-content">
+            {renderContent(message)}
         </div>
-    );
+    </div>
+);
 }
