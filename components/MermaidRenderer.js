@@ -2,16 +2,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import mermaid from "mermaid";
 
-// Initialize mermaid ONCE globally, outside the component.
-// This is the most important fix — never call initialize() inside useEffect.
+// ✅ CRITICAL FIX: Initialize ONCE outside the component — never inside useEffect
 mermaid.initialize({
     startOnLoad: false,
     theme: "default",
     securityLevel: "loose",
-    fontFamily: "inherit",
+    fontFamily: "Inter, sans-serif",
+    flowchart: { useMaxWidth: true, htmlLabels: true },
 });
 
-let diagramCounter = 0; // Safe incrementing ID — avoids Date.now() collisions
+let diagramCounter = 0;
 
 export default function MermaidRenderer({ chartCode }) {
     const containerRef = useRef(null);
@@ -19,11 +19,9 @@ export default function MermaidRenderer({ chartCode }) {
     const [isRendering, setIsRendering] = useState(true);
 
     useEffect(() => {
-        // Reset state on new chartCode
         setError(null);
         setIsRendering(true);
 
-        // Strip markdown fences cleanly
         const clean = chartCode
             .replace(/```mermaid/gi, "")
             .replace(/```/g, "")
@@ -34,7 +32,6 @@ export default function MermaidRenderer({ chartCode }) {
             return;
         }
 
-        // Unique, safe element ID — no special characters
         const id = `mermaid-diagram-${++diagramCounter}`;
 
         const renderDiagram = async () => {
@@ -42,35 +39,32 @@ export default function MermaidRenderer({ chartCode }) {
                 const { svg } = await mermaid.render(id, clean);
                 if (containerRef.current) {
                     containerRef.current.innerHTML = svg;
-
-                    // Make SVG responsive
                     const svgEl = containerRef.current.querySelector("svg");
                     if (svgEl) {
                         svgEl.style.maxWidth = "100%";
                         svgEl.style.height = "auto";
-                        svgEl.removeAttribute("height"); // lets it scale naturally
+                        svgEl.removeAttribute("height");
                     }
                 }
             } catch (err) {
                 console.error("Mermaid Render Error:", err);
-                setError("Could not render this diagram. The AI may have produced invalid diagram code.");
+                setError("Diagram could not be rendered.");
             } finally {
                 setIsRendering(false);
             }
         };
 
-        // Small delay to let the DOM settle (especially after streaming)
         const timer = setTimeout(renderDiagram, 200);
         return () => clearTimeout(timer);
     }, [chartCode]);
 
     if (error) {
         return (
-            <div className="my-4 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
+            <div className="my-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs">
                 <strong>⚠️ Diagram Error:</strong> {error}
-                <details className="mt-2 text-xs text-amber-600">
-                    <summary className="cursor-pointer font-semibold">Show raw diagram code</summary>
-                    <pre className="mt-1 whitespace-pre-wrap break-all">{chartCode}</pre>
+                <details className="mt-1">
+                    <summary className="cursor-pointer font-semibold text-[10px] uppercase">Show raw code</summary>
+                    <pre className="mt-1 whitespace-pre-wrap break-all text-[10px]">{chartCode}</pre>
                 </details>
             </div>
         );
@@ -78,7 +72,7 @@ export default function MermaidRenderer({ chartCode }) {
 
     if (isRendering) {
         return (
-            <div className="my-4 p-4 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 text-xs font-bold uppercase tracking-widest animate-pulse">
+            <div className="my-3 p-3 rounded-xl bg-slate-50 border border-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-widest animate-pulse">
                 Rendering diagram...
             </div>
         );
@@ -87,7 +81,7 @@ export default function MermaidRenderer({ chartCode }) {
     return (
         <div
             ref={containerRef}
-            className="mermaid-container my-4 p-4 bg-white rounded-xl border border-slate-100 overflow-x-auto"
+            className="mermaid-container my-4 p-4 bg-white rounded-xl border border-slate-100 overflow-x-auto flex justify-center"
         />
     );
 }

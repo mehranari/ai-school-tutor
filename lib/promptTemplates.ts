@@ -1,140 +1,132 @@
-// Prompt template generator for AI School Tutor
-// This file creates dynamic prompts based on grade, subject, curriculum, mode, and student question
+// lib/promptTemplates.js (or .ts — works as either)
+// Advanced prompt generator for TutorGem AI Tutor
 
-export type Grade = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-export type Subject = 'Physics' | 'Maths' | 'Science' | 'Chemistry' | 'Biology' | 'English' | 'History' | 'Geography';
-export type Curriculum = 'basic' | 'general';
-export type Mode = 'explain' | 'solve' | 'notes' | 'mcqs' | 'exam_paper';
-
-interface PromptParams {
-  grade: Grade;
-  subject: Subject;
-  curriculum: Curriculum;
-  mode: Mode;
-  studentQuestion: string;
+export function getGradeLanguageLevel(grade) {
+  if (grade <= 3) return "Use very simple words and short sentences for early primary students (age 6-8).";
+  if (grade <= 6) return "Use clear, simple language suitable for elementary students (age 9-12).";
+  if (grade <= 8) return "Use moderately complex language for middle school students (age 12-14).";
+  return "Use academic language with thorough detail suitable for high school students (age 14-17).";
 }
 
-// Get grade-appropriate language level
-function getGradeLanguageLevel(grade: Grade): string {
-  if (grade >= 1 && grade <= 3) {
-    return 'Use very simple words, short sentences, and basic vocabulary suitable for early primary students.';
-  } else if (grade >= 4 && grade <= 6) {
-    return 'Use clear and simple language with easy-to-understand explanations suitable for elementary students.';
-  } else if (grade >= 7 && grade <= 8) {
-    return 'Use moderately complex language with detailed explanations suitable for middle school students.';
-  } else {
-    return 'Use appropriate academic language with thorough explanations suitable for high school students.';
-  }
-}
+function getSubjectInstructions(subject) {
+  const diagrams = `ALWAYS include a Mermaid diagram when explaining a process, flow, or relationship. Use this exact format:
+\`\`\`mermaid
+graph TD
+    A[Start] --> B[Step 1]
+    B --> C[Step 2]
+\`\`\``;
 
-// Get subject-specific tone and formatting instructions
-function getSubjectInstructions(subject: Subject): string {
+  const images = `ALWAYS include one illustrative image using this exact format:
+![Description of concept](https://pollinations.ai/p/educational_diagram_of_TOPIC?width=700&height=400&nologo=true)
+Replace TOPIC with the actual subject matter.`;
+
   switch (subject) {
-    case 'Maths':
-      return `### 📐 Textbook Mathematical Analysis
-- **Standard Coverage**: Follow the structure of standard curriculum books.
-- **Visuals**: Use Mermaid diagrams (\`\`\`mermaid) for logic flows AND descriptive images for geometric concepts.
-- **Structural Items**: 
-  - **Axiom Box**: State the fundamental rule.
-  - **Solved Example**: A detailed walkthrough.
-- Tone: Educational, precise, and highly structured.`;
-    case 'Physics':
-      return `### ⚛️ Scientific Visual Guide
-- **Visuals**: Use Mermaid (\`\`\`mermaid) for force/process diagrams. Use illustrative pictures for physical setups.
-- **Experiment Box**: Describe a simple "Home Experiment".
-- **Infographic Style**: Use lists and bold text for "Visual Summaries".
-- Tone: Investigative and textbook-accurate.`;
-    case 'English':
-      return `### 📚 Literary Exploration
-- **Mind Map**: Use Mermaid (\`\`\`mermaid) to show character relationships.
-- **Visuals**: Use illustrative pictures to set the mood/setting of the literary piece.
-- **Word Info-Box**: List 5 high-yield words.
-- Tone: Expressive and literary.`;
+    case "Maths":
+      return `SUBJECT RULES FOR MATHS:
+- ${diagrams}
+- Use LaTeX for ALL formulas: inline $formula$ or block $$formula$$
+- Structure: **Rule/Formula** → **Worked Example** → **Practice Tips**
+- Use numbered steps for solutions
+- ${images}`;
+
+    case "Physics":
+      return `SUBJECT RULES FOR PHYSICS:
+- ${diagrams}
+- Use LaTeX for equations: $F = ma$, $E = mc^2$
+- Structure: **Law/Principle** → **Real-World Example** → **Formula** → **Solved Problem**
+- ${images}`;
+
+    case "Chemistry":
+      return `SUBJECT RULES FOR CHEMISTRY:
+- ${diagrams}
+- Use LaTeX for equations
+- Structure: **Concept** → **Reaction/Process** → **Example** → **Key Points**
+- ${images}`;
+
+    case "Biology":
+      return `SUBJECT RULES FOR BIOLOGY:
+- ${diagrams}
+- Structure: **Definition** → **How It Works** → **Diagram** → **Real Example**
+- ${images}`;
+
+    case "English":
+      return `SUBJECT RULES FOR ENGLISH:
+- Use Mermaid mindmaps for concepts: \`\`\`mermaid\nmindmap\n  root((Topic))\n\`\`\`
+- Structure: **Definition** → **Example** → **How To Use** → **Common Mistakes**
+- ${images}`;
+
     default:
-      return `### 🎓 Academic Study Guide
-- Use Mermaid diagrams (\`\`\`mermaid) for processes.
-- Use illustrative pictures to represent the topic visually.`;
+      return `SUBJECT RULES:
+- ${diagrams}
+- ${images}
+- Use structured sections with clear headings`;
   }
 }
 
-// Generate prompt based on mode
-function generateModeSpecificPrompt(
-  mode: Mode,
-  grade: Grade,
-  subject: Subject,
-  studentQuestion: string
-): string {
-  const subjectSpecific = getSubjectInstructions(subject);
-
-  switch (mode) {
-    case 'explain':
-      return `Explain the lesson "${studentQuestion}" for Grade ${grade}. 
-
-${subjectSpecific}
-
-#### Textbook Structure:
-1. **Header**: Engaging Topic Title.
-2. **Key Objectives**: What the student will learn.
-3. **Core Explanation**: The main content with sub-headers.
-4. **Visual Section**: Include a high-quality illustrative picture AND a Mermaid diagram if possible.
-5. **Chapter Summary**: A condensed version of the whole lesson.`;
-
-    case 'solve':
-      return `Solution Guide for: "${studentQuestion}"
-
-${subjectSpecific}
-
-#### Detailed Solution Format:
-- **Conceptual Grounding**: Theory before solving.
-- **Variable Table**: List all knowns and unknowns.
-- **Visual Aid**: Use Mermaid for logic flow or an image for the setup.
-- **The Journey**: Numbered calculations with LaTeX.
-- **Result**: Bold final answer.`;
-
-    case 'notes':
-      return `Study Notes on: "${studentQuestion}".
-
-${subjectSpecific}
-
-#### Notes Organization:
-- **Major Headers**: For main concepts.
-- **Concept Visual**: A high-level Mermaid diagram or illustrative image.
-- **Revision Table**: Compare this topic with a related one.`;
-
-    default:
-      return `Academic Assistance: "${studentQuestion}"
-
-${subjectSpecific}`;
-  }
-}
-
-// Main prompt generator
-export function generatePrompt(params: PromptParams): string {
-  const { grade, subject, curriculum, mode, studentQuestion } = params;
-
+export function generatePrompt({ grade, subject, curriculum, mode, studentQuestion }) {
   const gradeLanguage = getGradeLanguageLevel(grade);
-  const modePrompt = generateModeSpecificPrompt(mode, grade, subject, studentQuestion);
+  const subjectInstructions = getSubjectInstructions(subject);
 
-  return `You are a World-Class Curriculum Designer and Textbook Author specializing in ${subject} for Grade ${grade}. Your task is to provide a response that looks exactly like a high-quality educational book.
+  const modeInstructions = mode === "exam_paper"
+    ? `Generate a complete exam paper on "${studentQuestion}" with:
+## 📋 Section A — MCQs (5 questions, 1 mark each)
+## ✍️ Section B — Short Questions (3 questions, 3 marks each)  
+## 📝 Section C — Long Questions (2 questions, 5 marks each)
+Mark scheme at the end.`
+    : `Explain "${studentQuestion}" for Grade ${grade} ${subject} students.
 
-BOOK STANDARDS:
-- **Diagrams**: ALWAYS try to include a Mermaid diagram (\`\`\`mermaid) for complex concepts.
-- **Illustrative Pictures**: ALWAYS include at least one descriptive picture using this format: ![Image Description](https://pollinations.ai/p/[description]?width=800&height=500&nologo=true)
-- **Coverage**: Cover "${studentQuestion}" with textbook depth.
-- **Formatting**: Use Markdown headers, Bold text, and Tables.
-- **Tone**: Professional professor persona.
+MANDATORY RESPONSE STRUCTURE — follow this EXACTLY:
 
-TEXTBOOK CONTENT:
-${modePrompt}
+## 📌 Quick Overview
+Write 2-3 sentences summarizing the key answer.
+
+## 🎯 Key Points
+- Point 1 (most important)
+- Point 2
+- Point 3
+- Point 4
+
+## 📖 Detailed Explanation
+Full explanation with sub-headings. Use **bold** for key terms.
+
+## 📊 Diagram / Visual
+[Include Mermaid diagram here if applicable]
+[Include image here]
+
+## 💡 Real-World Example
+A practical, relatable example for a Grade ${grade} student.
+
+## ✅ Summary
+A concise recap in 2-3 sentences.
+
+## 🚀 Practice Challenge
+One practice question for the student to try.`;
+
+  return `You are a World-Class Curriculum Author and Expert ${subject} Teacher for Grade ${grade} students.
 
 ${gradeLanguage}
 
-FINAL FORMATTING RULE:
-- ALWAYS use LaTeX for math/science ($...$).
-- STRICTLY use \`\`\`mermaid syntax for diagrams.
-- ALWAYS use the Pollinations.ai URL format for pictures to represent biological, physical, or historical concepts.
-- Make the layout feel premium and visually engaging.
+${subjectInstructions}
 
-Your expert textbook entry:`;
+FORMATTING RULES — MANDATORY:
+1. Use Markdown headers (##, ###) for sections
+2. Use **bold** for key terms and concepts
+3. Use bullet points (- ) for lists — never write walls of text
+4. Use tables for comparisons
+5. Use > blockquotes for important notes/rules
+6. Keep paragraphs SHORT — max 3-4 lines each
+7. ALWAYS include a Mermaid diagram for process/flow topics
+8. ALWAYS include a Pollinations.ai image for visual topics
+9. LaTeX: inline $formula$ for math/science equations
+
+TASK:
+${modeInstructions}
+
+Your expert educational response:`;
 }
 
+// TypeScript type exports (ignored by JS, used by TS files)
+export const Grade = null;
+export const Subject = null;
+export const Curriculum = null;
+export const Mode = null;
