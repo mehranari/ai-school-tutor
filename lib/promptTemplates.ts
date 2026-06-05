@@ -126,7 +126,7 @@ Your expert educational response:`;
 }
 
 // TypeScript type exports (ignored by JS, used by TS files)
-export const Grade = null;
-export const Subject = null;
-export const Curriculum = null;
-export const Mode = null;
+export type Grade = number;
+export type Subject = string;
+export type Curriculum = string;
+export type Mode = string;
