@@ -1,26 +1,15 @@
 "use client";
-import { useEffect, useRef } from "react";
-import mermaid from "mermaid";
-
-mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
+import React from "react";
+import Mermaid from "react-mermaid2";
 
 export default function MermaidRenderer({ chartCode }) {
-    const containerRef = useRef(null);
+    // Ensure the code is clean and doesn't contain extra markdown fences
+    const cleanCode = chartCode.replace(/```mermaid/gi, "").replace(/
+        ```/g, "").trim();
 
-    useEffect(() => {
-        const renderDiagram = async () => {
-            if (containerRef.current) {
-                try {
-                    const id = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
-                    const { svg } = await mermaid.render(id, chartCode);
-                    containerRef.current.innerHTML = svg;
-                } catch (err) {
-                    console.error("Mermaid render failed:", err);
-                }
-            }
-        };
-        renderDiagram();
-    }, [chartCode]);
-
-    return <div ref={containerRef} className="w-full flex justify-center my-4 overflow-x-auto" />;
+  return (
+    <div className="my-6 p-4 bg-white border border-slate-200 rounded-xl overflow-x-auto">
+      <Mermaid chart="{cleanCode}"/>
+    </div>
+  );
 }
