@@ -5,7 +5,7 @@ import MessageBubble from "./MessageBubble";
 import { Send, Loader2, Sparkles, GraduationCap, LayoutPanelLeft, FileText, Eraser, Calculator } from "lucide-react";
 import ScientificCalculator from "./ScientificCalculator";
 
-export default function ChatBox({ grade, subject }) {
+export default function ChatBox({ grade, subject, submittedQuery, clearSubmittedQuery }) {
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -36,6 +36,49 @@ export default function ChatBox({ grade, subject }) {
             localStorage.setItem(`tutor_chat_${subject}_${grade}`, JSON.stringify(messages));
         }
     }, [messages, subject, grade]);
+
+    // External submitted query listener from the hero section
+    useEffect(() => {
+        if (submittedQuery && clearSubmittedQuery) {
+            const queryText = submittedQuery;
+            clearSubmittedQuery();
+            
+            if (isLoading) return;
+            
+            const triggerQuery = async () => {
+                setMessages((prev) => [...prev, { text: queryText, isAi: false }]);
+                setIsLoading(true);
+
+                try {
+                    const response = await fetch("/api/tutor", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            message: queryText,
+                            grade,
+                            subject,
+                            mode: mode === "chat" ? "explain" : "exam",
+                        }),
+                    });
+
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error);
+
+                    setMessages((prev) => [...prev, { text: data.response, isAi: true }]);
+                } catch (error) {
+                    setMessages((prev) => [
+                        ...prev,
+                        { text: "I'm having a little trouble connecting. Please try again!", isAi: true },
+                    ]);
+                    console.error(error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            triggerQuery();
+        }
+    }, [submittedQuery, clearSubmittedQuery, grade, subject, mode, isLoading]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

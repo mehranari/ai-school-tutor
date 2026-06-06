@@ -10,7 +10,8 @@ import { GraduationCap, BookOpen, Lightbulb, Target, ArrowRight } from "lucide-r
 export default function Home() {
     const [selectedGrade, setSelectedGrade] = useState(10);
     const [selectedSubject, setSelectedSubject] = useState("Maths");
-
+    const [heroInput, setHeroInput] = useState("");
+    const [submittedQuery, setSubmittedQuery] = useState("");
 
     const getSubjectFocus = () => {
         switch (selectedSubject) {
@@ -41,6 +42,14 @@ export default function Home() {
         }
     };
 
+    const handleHeroSubmit = (e) => {
+        e.preventDefault();
+        if (!heroInput.trim()) return;
+        setSubmittedQuery(heroInput);
+        setHeroInput("");
+        scrollToChat();
+    };
+
     const accent = getSubjectAccent();
 
     return (
@@ -68,19 +77,28 @@ export default function Home() {
                     </div>
                 </div>
 
-                {/* Minimal Header - Direct to Question */}
-                <header className="py-6 slide-up">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                        <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-slate-900 leading-[0.85]">
-                            Master <span className={`text-${accent}-600 transition-colors duration-500`}>{selectedSubject}</span> <br />
-                            <span className="text-slate-200">with Expert Guidance.</span>
+                {/* Compact Hero Section */}
+                <header className="py-2 md:py-4 slide-up border-b border-slate-100/50 mb-6">
+                    <div className="flex flex-col gap-4 max-w-4xl">
+                        <h1 className="text-xl md:text-3xl font-black tracking-tight text-slate-900 font-outfit">
+                            Ask Anything. Learn Everything. Any Subject, Any Grade.
                         </h1>
-                        <div className="flex gap-2">
-                            <div className="p-4 rounded-2xl bg-white border border-slate-100 shadow-sm flex items-center gap-3">
-                                <div className={`w-2 h-2 rounded-full bg-${accent}-500 animate-pulse`}></div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Global AI Node Active</span>
-                            </div>
-                        </div>
+                        <form onSubmit={handleHeroSubmit} className="relative flex items-center w-full">
+                            <input
+                                type="text"
+                                value={heroInput}
+                                onChange={(e) => setHeroInput(e.target.value)}
+                                placeholder="Ask your question — any subject, any grade..."
+                                className="w-full pl-5 pr-28 py-3.5 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-slate-900/5 focus:border-slate-900 transition-all font-medium placeholder:text-slate-400 text-slate-900 text-sm shadow-sm min-h-[48px]"
+                            />
+                            <button
+                                type="submit"
+                                disabled={!heroInput.trim()}
+                                className="absolute right-2 bg-slate-900 text-white px-5 py-2.5 rounded-xl hover:bg-black active:scale-95 disabled:opacity-20 transition-all text-xs font-black uppercase tracking-widest min-h-[38px] flex items-center justify-center"
+                            >
+                                Ask AI
+                            </button>
+                        </form>
                     </div>
                 </header>
 
@@ -152,7 +170,12 @@ export default function Home() {
 
                     {/* Question Section */}
                     <div id="chat-section" className="lg:col-span-8 slide-up" style={{ animationDelay: "0.2s" }}>
-                        <ChatBox grade={selectedGrade} subject={selectedSubject} />
+                        <ChatBox 
+                            grade={selectedGrade} 
+                            subject={selectedSubject} 
+                            submittedQuery={submittedQuery}
+                            clearSubmittedQuery={() => setSubmittedQuery("")}
+                        />
                     </div>
                 </div>
 
