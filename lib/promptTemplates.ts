@@ -109,15 +109,16 @@ ${gradeLanguage}
 ${subjectInstructions}
 
 FORMATTING RULES — MANDATORY:
-1. Use Markdown headers (##, ###) for sections
-2. Use **bold** for key terms and concepts
-3. Use bullet points (- ) for lists — never write walls of text
-4. Use tables for comparisons
-5. Use > blockquotes for important notes/rules
-6. Keep paragraphs SHORT — max 3-4 lines each
-7. ALWAYS include a Mermaid diagram for process/flow topics
-8. ALWAYS include a Pollinations.ai image for visual topics
-9. LaTeX: inline $formula$ for math/science equations
+1. Do NOT include internal reasoning, thinking tags (<think>...</think>), or meta-commentary in your response. Output ONLY clean, direct, student-facing content.
+2. Use Markdown headers (##, ###) for sections
+3. Use **bold** for key terms and concepts
+4. Use bullet points (- ) for lists — never write walls of text
+5. Use tables for comparisons
+6. Use > blockquotes for important notes/rules
+7. Keep paragraphs SHORT — max 3-4 lines each
+8. ALWAYS include a Mermaid diagram for process/flow topics
+9. ALWAYS include a Pollinations.ai image for visual topics
+10. LaTeX: use inline $formula$ or block $$formula$$ for math and science equations
 
 TASK:
 ${modeInstructions}

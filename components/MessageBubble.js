@@ -7,6 +7,17 @@ import rehypeKatex from "rehype-katex";
 import { Trash2, BookOpen, ChevronDown, ChevronUp, Copy, Check, Lightbulb, ListChecks, ArrowRight } from "lucide-react";
 import MermaidRenderer from "./MermaidRenderer";
 
+// ─── Preprocess LaTeX delimiters ──────────────────────────────────────────
+function preprocessLatex(text) {
+    if (!text || typeof text !== "string") return "";
+    let processed = text;
+    // Replace block math \[ ... \] with $$ ... $$
+    processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, "$$$$1$$");
+    // Replace inline math \( ... \) with $ ... $
+    processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, "$$1$");
+    return processed;
+}
+
 // ─── Split message into text / mermaid / image parts ───────────────────────
 function splitMessageParts(message) {
     const parts = [];
@@ -17,15 +28,15 @@ function splitMessageParts(message) {
     while ((match = regex.exec(message)) !== null) {
         if (match.index > lastIndex) {
             const text = message.slice(lastIndex, match.index);
-            if (text.trim()) parts.push({ type: "text", content: text });
+            if (text.trim()) parts.push({ type: "text", content: preprocessLatex(text) });
         }
         parts.push({ type: "mermaid", content: match[0] });
         lastIndex = regex.lastIndex;
     }
 
     const remaining = message.slice(lastIndex);
-    if (remaining.trim()) parts.push({ type: "text", content: remaining });
-    if (parts.length === 0) parts.push({ type: "text", content: message });
+    if (remaining.trim()) parts.push({ type: "text", content: preprocessLatex(remaining) });
+    if (parts.length === 0) parts.push({ type: "text", content: preprocessLatex(message) });
 
     return parts;
 }

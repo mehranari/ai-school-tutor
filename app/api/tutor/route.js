@@ -1,5 +1,6 @@
 import { queryGroq } from "../../../lib/groq";
 import { generatePrompt } from "../../../lib/promptTemplates";
+import { cleanResponse } from "../../../lib/cleanResponse";
 
 /**
  * API Route: /api/tutor
@@ -26,13 +27,7 @@ export async function POST(req) {
 
         const aiResponse = await queryGroq(prompt);
 
-        // ✅ CRITICAL FIX: Do NOT strip ```mermaid blocks.
-        // The old route.ts was removing all code blocks which prevented
-        // diagrams from ever rendering. We only clean up loose artifacts.
-        let cleanedResponse = aiResponse;
-
-        // Remove leftover [INST] tags from model artifacts
-        cleanedResponse = cleanedResponse.replace(/\[\/?INST\]/g, "").trim();
+        let cleanedResponse = cleanResponse(aiResponse);
 
         // Remove the prompt itself if the model echoed it back
         if (cleanedResponse.startsWith(prompt.slice(0, 50))) {
