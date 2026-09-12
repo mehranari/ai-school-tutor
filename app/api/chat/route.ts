@@ -59,14 +59,14 @@ export async function POST(request: NextRequest) {
       response: generatedText || 'Sorry, I could not generate a response. Please try again.',
     });
 
-  } catch (error) {
-    console.error('API route error:', error);
+  } catch (error: any) {
+    console.error('[/api/chat Error Trace]:', error);
     return NextResponse.json(
       {
-        error: 'Internal server error',
-        response: 'An error occurred while processing your request. Please check your API key and try again.'
+        error: error?.message || 'Internal server error',
+        details: error?.stack || null,
       },
       { status: 500 }
     );
   }
-}
+}

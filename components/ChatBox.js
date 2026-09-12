@@ -62,13 +62,15 @@ export default function ChatBox({ grade, subject, submittedQuery, clearSubmitted
                     });
 
                     const data = await response.json();
-                    if (data.error) throw new Error(data.error);
+                    if (!response.ok || data.error) {
+                        throw new Error(data.error || `Server error (${response.status})`);
+                    }
 
                     setMessages((prev) => [...prev, { text: data.response, isAi: true }]);
                 } catch (error) {
                     setMessages((prev) => [
                         ...prev,
-                        { text: "I'm having a little trouble connecting. Please try again!", isAi: true },
+                        { text: error.message || "I'm having a little trouble connecting. Please try again!", isAi: true },
                     ]);
                     console.error(error);
                 } finally {
@@ -130,13 +132,15 @@ export default function ChatBox({ grade, subject, submittedQuery, clearSubmitted
             });
 
             const data = await response.json();
-            if (data.error) throw new Error(data.error);
+            if (!response.ok || data.error) {
+                throw new Error(data.error || `Server error (${response.status})`);
+            }
 
             setMessages((prev) => [...prev, { text: data.response, isAi: true }]);
         } catch (error) {
             setMessages((prev) => [
                 ...prev,
-                { text: "I'm having a little trouble connecting. Please try again!", isAi: true },
+                { text: error.message || "I'm having a little trouble connecting. Please try again!", isAi: true },
             ]);
             console.error(error);
         } finally {

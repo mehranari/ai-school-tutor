@@ -45,13 +45,13 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        console.error("API route error:", error);
+        console.error("[/api/tutor Error Trace]:", error);
         return new Response(JSON.stringify({
-            error: error.message,
-            response: "Oops! Something went wrong. Please try again."
+            error: error.message || "Failed to generate AI tutor response.",
+            details: error.stack || null,
         }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
         });
     }
-}
+}
