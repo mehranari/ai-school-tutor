@@ -11,7 +11,7 @@ export async function POST(req) {
         const { message, grade, subject, mode } = await req.json();
 
         if (!message || !grade || !subject) {
-            return new Response(JSON.stringify({ error: "Missing required fields." }), {
+            return new Response(JSON.stringify({ error: "Missing required fields: message, grade, or subject." }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
             });
@@ -41,12 +41,20 @@ export async function POST(req) {
 
     } catch (error) {
         console.error("[/api/tutor Error Trace]:", error);
+
+        const isApiKeyError = error.message?.includes("GROQ_API_KEY");
+        const status = isApiKeyError ? 500 : (error.status || 503);
+        const userFacingMessage = isApiKeyError
+            ? "GROQ_API_KEY is missing or not properly configured in .env.local"
+            : "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
+
         return new Response(JSON.stringify({
-            error: error.message || "Failed to generate AI tutor response.",
-            details: error.stack || null,
+            error: userFacingMessage,
+            code: isApiKeyError ? "CONFIG_ERROR" : "SERVICE_BUSY",
         }), {
-            status: 500,
+            status,
             headers: { "Content-Type": "application/json" },
         });
     }
-}
+}
+

@@ -57,22 +57,24 @@ export default function ChatInterface({
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get response from AI');
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        const fallbackMsg = 'The tutor is currently experiencing high demand. Please wait a few seconds and ask again!';
+        throw new Error(data.error || fallbackMsg);
       }
 
-      const data = await response.json();
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: data.response || 'Sorry, I could not generate a response.' },
       ]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
+      const errorMsg = error?.message || 'The tutor is currently experiencing high demand. Please wait a few seconds and ask again!';
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Sorry, there was an error. Please check your API key and try again.',
+          content: errorMsg,
         },
       ]);
     } finally {

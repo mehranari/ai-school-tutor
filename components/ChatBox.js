@@ -63,16 +63,18 @@ export default function ChatBox({ grade, subject, submittedQuery, clearSubmitted
 
                     const data = await response.json();
                     if (!response.ok || data.error) {
-                        throw new Error(data.error || `Server error (${response.status})`);
+                        const fallbackMsg = "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
+                        throw new Error(data.error || fallbackMsg);
                     }
 
                     setMessages((prev) => [...prev, { text: data.response, isAi: true }]);
                 } catch (error) {
+                    const errorMsg = error.message || "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
                     setMessages((prev) => [
                         ...prev,
-                        { text: error.message || "I'm having a little trouble connecting. Please try again!", isAi: true },
+                        { text: errorMsg, isAi: true },
                     ]);
-                    console.error(error);
+                    console.error("[ChatBox Error]:", error);
                 } finally {
                     setIsLoading(false);
                 }
@@ -133,16 +135,18 @@ export default function ChatBox({ grade, subject, submittedQuery, clearSubmitted
 
             const data = await response.json();
             if (!response.ok || data.error) {
-                throw new Error(data.error || `Server error (${response.status})`);
+                const fallbackMsg = "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
+                throw new Error(data.error || fallbackMsg);
             }
 
             setMessages((prev) => [...prev, { text: data.response, isAi: true }]);
         } catch (error) {
+            const errorMsg = error.message || "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
             setMessages((prev) => [
                 ...prev,
-                { text: error.message || "I'm having a little trouble connecting. Please try again!", isAi: true },
+                { text: errorMsg, isAi: true },
             ]);
-            console.error(error);
+            console.error("[ChatBox Error]:", error);
         } finally {
             setIsLoading(false);
         }

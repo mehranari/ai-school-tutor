@@ -48,12 +48,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('[/api/chat Error Trace]:', error);
+
+    const isApiKeyError = error?.message?.includes('GROQ_API_KEY');
+    const status = isApiKeyError ? 500 : (error?.status || 503);
+    const userFacingMessage = isApiKeyError
+      ? 'Groq API key not configured. Please set GROQ_API_KEY in .env.local'
+      : 'The tutor is currently experiencing high demand. Please wait a few seconds and ask again!';
+
     return NextResponse.json(
       {
-        error: error?.message || 'Internal server error',
-        details: error?.stack || null,
+        error: userFacingMessage,
+        code: isApiKeyError ? 'CONFIG_ERROR' : 'SERVICE_BUSY',
       },
-      { status: 500 }
+      { status }
     );
   }
-}
+}
+
