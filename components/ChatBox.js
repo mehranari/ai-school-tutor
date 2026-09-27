@@ -63,13 +63,13 @@ export default function ChatBox({ grade, subject, submittedQuery, clearSubmitted
 
                     const data = await response.json();
                     if (!response.ok || data.error) {
-                        const fallbackMsg = "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
-                        throw new Error(data.error || fallbackMsg);
+                        const fallbackMsg = "High demand, please try again.";
+                        throw new Error(data.message || data.error || fallbackMsg);
                     }
 
                     setMessages((prev) => [...prev, { text: data.response, isAi: true }]);
                 } catch (error) {
-                    const errorMsg = error.message || "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
+                    const errorMsg = error.message || "High demand, please try again.";
                     setMessages((prev) => [
                         ...prev,
                         { text: errorMsg, isAi: true },
@@ -135,8 +135,8 @@ export default function ChatBox({ grade, subject, submittedQuery, clearSubmitted
 
             const data = await response.json();
             if (!response.ok || data.error) {
-                const fallbackMsg = "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
-                throw new Error(data.error || fallbackMsg);
+                const fallbackMsg = "High demand, please try again.";
+                throw new Error(data.message || data.error || fallbackMsg);
             }
 
             setMessages((prev) => [...prev, { text: data.response, isAi: true }]);

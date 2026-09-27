@@ -40,21 +40,31 @@ export async function POST(req) {
         });
 
     } catch (error) {
-        console.error("[/api/tutor Error Trace]:", error);
+        console.error("[/api/tutor Error]:", {
+            status: error?.status || 500,
+            message: error?.message,
+            stack: error?.stack,
+        }, error);
 
-        const isApiKeyError = error.message?.includes("GROQ_API_KEY");
-        const status = isApiKeyError ? 500 : (error.status || 503);
-        const userFacingMessage = isApiKeyError
-            ? "GROQ_API_KEY is missing or not properly configured in .env.local"
-            : "The tutor is currently experiencing high demand. Please wait a few seconds and ask again!";
+        const isApiKeyError = error?.message?.includes("GROQ_API_KEY");
+        if (isApiKeyError) {
+            return new Response(JSON.stringify({
+                error: "Configuration Error",
+                message: "GROQ_API_KEY is not defined or invalid.",
+            }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
 
         return new Response(JSON.stringify({
-            error: userFacingMessage,
-            code: isApiKeyError ? "CONFIG_ERROR" : "SERVICE_BUSY",
+            error: "Service busy",
+            message: "High demand, please try again.",
         }), {
-            status,
+            status: 503,
             headers: { "Content-Type": "application/json" },
         });
     }
 }
+
 

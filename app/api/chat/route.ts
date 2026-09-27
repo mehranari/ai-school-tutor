@@ -47,21 +47,31 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('[/api/chat Error Trace]:', error);
+    console.error('[/api/chat Error]:', {
+      status: error?.status || 500,
+      message: error?.message,
+      stack: error?.stack,
+    }, error);
 
     const isApiKeyError = error?.message?.includes('GROQ_API_KEY');
-    const status = isApiKeyError ? 500 : (error?.status || 503);
-    const userFacingMessage = isApiKeyError
-      ? 'Groq API key not configured. Please set GROQ_API_KEY in .env.local'
-      : 'The tutor is currently experiencing high demand. Please wait a few seconds and ask again!';
+    if (isApiKeyError) {
+      return NextResponse.json(
+        {
+          error: 'Configuration Error',
+          message: 'GROQ_API_KEY is not defined or invalid.',
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       {
-        error: userFacingMessage,
-        code: isApiKeyError ? 'CONFIG_ERROR' : 'SERVICE_BUSY',
+        error: 'Service busy',
+        message: 'High demand, please try again.',
       },
-      { status }
+      { status: 503 }
     );
   }
 }
+
 
