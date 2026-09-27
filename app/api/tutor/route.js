@@ -1,21 +1,29 @@
-import { queryGroq } from "../../../lib/groq";
+import { NextResponse } from "next/server";
+import Groq from "groq-sdk";
 import { generatePrompt } from "../../../lib/promptTemplates";
 import { cleanResponse } from "../../../lib/cleanResponse";
 
 /**
  * API Route: /api/tutor
- * Main tutor endpoint used by ChatBox.js
+ * Temporary Debug Handler surfacing direct Groq API errors
  */
 export async function POST(req) {
     try {
         const { message, grade, subject, mode } = await req.json();
 
         if (!message || !grade || !subject) {
-            return new Response(JSON.stringify({ error: "Missing required fields: message, grade, or subject." }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" },
-            });
+            return NextResponse.json({ error: "Missing required fields: message, grade, or subject." }, { status: 400 });
         }
+
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) {
+            return NextResponse.json({
+                response: "DEBUG API ERROR: GROQ_API_KEY environment variable is not defined or invalid.",
+                text: "DEBUG API ERROR: GROQ_API_KEY environment variable is not defined or invalid."
+            }, { status: 200 });
+        }
+
+        const groq = new Groq({ apiKey });
 
         const prompt = generatePrompt({
             grade: parseInt(grade) || 5,
@@ -25,46 +33,31 @@ export async function POST(req) {
             studentQuestion: message,
         });
 
-        const aiResponse = await queryGroq(prompt);
-
-        let cleanedResponse = cleanResponse(aiResponse);
-
-        // Remove the prompt itself if the model echoed it back
-        if (cleanedResponse.startsWith(prompt.slice(0, 50))) {
-            cleanedResponse = cleanedResponse.replace(prompt, "").trim();
-        }
-
-        return new Response(JSON.stringify({ response: cleanedResponse }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
+        const chatCompletion = await groq.chat.completions.create({
+            messages: [{ role: "user", content: prompt }],
+            model: "llama-3.1-8b-instant",
+            temperature: 0.7,
+            max_tokens: 300,
+            stream: false,
         });
+
+        const responseContent = chatCompletion.choices[0]?.message?.content || "";
+        const cleaned = cleanResponse(responseContent);
+
+        return NextResponse.json({
+            response: cleaned || "Empty response returned from model.",
+            text: cleaned || "Empty response returned from model."
+        }, { status: 200 });
 
     } catch (error) {
-        console.error("[/api/tutor Error]:", {
-            status: error?.status || 500,
-            message: error?.message,
-            stack: error?.stack,
-        }, error);
-
-        const isApiKeyError = error?.message?.includes("GROQ_API_KEY");
-        if (isApiKeyError) {
-            return new Response(JSON.stringify({
-                error: "Configuration Error",
-                message: "GROQ_API_KEY is not defined or invalid.",
-            }), {
-                status: 500,
-                headers: { "Content-Type": "application/json" },
-            });
-        }
-
-        return new Response(JSON.stringify({
-            error: "Service busy",
-            message: "High demand, please try again.",
-        }), {
-            status: 503,
-            headers: { "Content-Type": "application/json" },
-        });
+        console.error("[DEBUG API ERROR]:", error);
+        const errorDetails = error?.message || (typeof error === "object" ? JSON.stringify(error) : String(error));
+        return NextResponse.json({
+            response: `DEBUG API ERROR: ${errorDetails}`,
+            text: `DEBUG API ERROR: ${errorDetails}`
+        }, { status: 200 });
     }
 }
+
 
 

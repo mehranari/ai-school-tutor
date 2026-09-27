@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import Groq from 'groq-sdk';
 import { generatePrompt, Grade, Subject, Curriculum, Mode } from '@/lib/promptTemplates';
-import { queryGroq } from '@/lib/groq';
 import { cleanResponse } from '@/lib/cleanResponse';
 
 export async function POST(request: NextRequest) {
@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { grade, subject, curriculum, mode, question } = body;
 
-    // Validate required fields
     if (!grade || !subject || !curriculum || !mode || !question) {
       return NextResponse.json(
         { error: 'Missing required fields: grade, subject, curriculum, mode, question' },
@@ -16,15 +15,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate GROQ key
-    if (!process.env.GROQ_API_KEY) {
-      return NextResponse.json(
-        { error: 'Groq API key not configured. Please set GROQ_API_KEY in .env.local' },
-        { status: 500 }
-      );
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({
+        response: 'DEBUG API ERROR: GROQ_API_KEY environment variable is not defined or invalid.',
+        text: 'DEBUG API ERROR: GROQ_API_KEY environment variable is not defined or invalid.',
+      }, { status: 200 });
     }
 
-    // Generate the base prompt using our template
+    const groq = new Groq({ apiKey });
+
     const basePrompt = generatePrompt({
       grade: grade as Grade,
       subject: subject as Subject,
@@ -33,45 +33,31 @@ export async function POST(request: NextRequest) {
       studentQuestion: question,
     });
 
-    // Use Groq API
-    let generatedText = await queryGroq(basePrompt);
-    generatedText = cleanResponse(generatedText);
-
-    // Clean up the response - remove the prompt if it was included
-    if (generatedText.includes(basePrompt)) {
-      generatedText = generatedText.replace(basePrompt, '').trim();
-    }
-
-    return NextResponse.json({
-      response: generatedText || 'Sorry, I could not generate a response. Please try again.',
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: basePrompt }],
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.7,
+      max_tokens: 300,
+      stream: false,
     });
 
+    const responseContent = chatCompletion.choices[0]?.message?.content || '';
+    const cleaned = cleanResponse(responseContent);
+
+    return NextResponse.json({
+      response: cleaned || 'Empty response returned from model.',
+      text: cleaned || 'Empty response returned from model.',
+    }, { status: 200 });
+
   } catch (error: any) {
-    console.error('[/api/chat Error]:', {
-      status: error?.status || 500,
-      message: error?.message,
-      stack: error?.stack,
-    }, error);
-
-    const isApiKeyError = error?.message?.includes('GROQ_API_KEY');
-    if (isApiKeyError) {
-      return NextResponse.json(
-        {
-          error: 'Configuration Error',
-          message: 'GROQ_API_KEY is not defined or invalid.',
-        },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json(
-      {
-        error: 'Service busy',
-        message: 'High demand, please try again.',
-      },
-      { status: 503 }
-    );
+    console.error('[DEBUG API ERROR]:', error);
+    const errorDetails = error?.message || (typeof error === 'object' ? JSON.stringify(error) : String(error));
+    return NextResponse.json({
+      response: `DEBUG API ERROR: ${errorDetails}`,
+      text: `DEBUG API ERROR: ${errorDetails}`,
+    }, { status: 200 });
   }
 }
+
 
 
