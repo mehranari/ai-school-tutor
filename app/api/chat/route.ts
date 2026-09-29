@@ -33,11 +33,9 @@ export async function POST(request: NextRequest) {
       studentQuestion: question,
     });
 
-    const modelName = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
-
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: basePrompt }],
-      model: modelName,
+      model: 'llama-3.1-8b-instant',
       temperature: 0.7,
       max_tokens: 300,
       stream: false,
