@@ -33,16 +33,34 @@ export async function POST(request: NextRequest) {
       studentQuestion: question,
     });
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: basePrompt }],
-      model: 'llama-3.1-8b-instant',
-      temperature: 0.7,
-      max_tokens: 300,
-      stream: false,
-    });
+    const MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
+    let lastError: any = null;
+    let cleaned = '';
 
-    const responseContent = chatCompletion.choices[0]?.message?.content || '';
-    const cleaned = cleanResponse(responseContent);
+    for (const model of MODELS) {
+      try {
+        const chatCompletion = await groq.chat.completions.create({
+          messages: [{ role: 'user', content: basePrompt }],
+          model: model,
+          temperature: 0.7,
+          max_tokens: 300,
+          stream: false,
+        });
+
+        const responseContent = chatCompletion.choices[0]?.message?.content || '';
+        cleaned = cleanResponse(responseContent);
+        if (cleaned) {
+          break;
+        }
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[Groq Chat Route Warning] Model '${model}' failed:`, err?.message || err);
+      }
+    }
+
+    if (!cleaned && lastError) {
+      throw lastError;
+    }
 
     return NextResponse.json({
       response: cleaned || 'Empty response returned from model.',
