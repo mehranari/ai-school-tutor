@@ -27,6 +27,16 @@ For EVERY response, you MUST structure your answer into the following explicit s
 
 Ensure all outputs are detailed, well-spaced with clear headings, and avoid brief summary-only responses.`;
 
+const CRITICAL_INSTRUCTION = `CRITICAL INSTRUCTION: Provide a comprehensive, highly detailed textbook-level response. You MUST include all 6 sections:
+1. 📌 Quick Overview & Core Concept
+2. 💡 Real-World Analogy
+3. 📐 Mathematical Formula & Variables (with units)
+4. 📊 Conceptual Visual / Diagram (using ASCII text art)
+5. 🔬 Practical Step-by-Step Example / Worked Problem
+6. 🎯 Key Takeaways & Exam Tips
+
+DO NOT shorten or summarize any section.`;
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -66,11 +76,11 @@ export async function POST(request: NextRequest) {
         const chatCompletion = await groq.chat.completions.create({
           messages: [
             { role: 'system', content: SYSTEM_PROMPT },
-            { role: 'user', content: basePrompt }
+            { role: 'user', content: `${CRITICAL_INSTRUCTION}\n\n${basePrompt}` }
           ],
           model: model,
-          temperature: 0.7,
-          max_tokens: 1200,
+          temperature: 0.6,
+          max_tokens: 2500,
           stream: false,
         });
 
